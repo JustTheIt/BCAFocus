@@ -1,65 +1,46 @@
 import { db } from './firebase';
-import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, where, orderBy, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, updateDoc, doc, getDoc, setDoc, query, where, serverTimestamp } from 'firebase/firestore';
 
-const TASKS_COLLECTION = 'tasks';
+const STUDENT_PLANNERS_COLLECTION = 'studentPlanners';
+const PLANNER_TEMPLATES_COLLECTION = 'plannerTemplates';
 
-export const addTask = async (userId, taskData) => {
+// Get or Create Student Planner
+export const getStudentPlanner = async (userId) => {
     try {
-        const docRef = await addDoc(collection(db, TASKS_COLLECTION), {
-            userId,
-            ...taskData,
-            createdAt: serverTimestamp(),
-            completed: false,
-        });
-        return { id: docRef.id, ...taskData };
-    } catch (error) {
-        throw error;
-    }
-};
+        const docRef = doc(db, STUDENT_PLANNERS_COLLECTION, userId);
+        const docSnap = await getDoc(docRef);
 
-export const getTasks = async (userId) => {
-    try {
-        const q = query(
-            collection(db, TASKS_COLLECTION),
-            where('userId', '==', userId),
-            orderBy('dueDate', 'asc') // Ensure dueDate is stored as ISO string or timestamp
-        );
-        const querySnapshot = await getDocs(q);
-        const tasks = [];
-        querySnapshot.forEach((doc) => {
-            tasks.push({ id: doc.id, ...doc.data() });
-        });
-        return tasks;
-    } catch (error) {
-        if (error.code === 'failed-precondition') {
-            // Index might be missing, return without sorting or handle gracefully
-            console.warn('Firestore Index required for sorting. Fetching without sort.');
-            const qNoSort = query(
-                collection(db, TASKS_COLLECTION),
-                where('userId', '==', userId)
-            );
-            const snap = await getDocs(qNoSort);
-            const t = [];
-            snap.forEach(d => t.push({ id: d.id, ...d.data() }));
-            return t;
+        if (docSnap.exists()) {
+            return { id: docSnap.id, ...docSnap.data() };
+        } else {
+            // Initialize empty planner
+            const initialData = { tasks: [], updatedAt: serverTimestamp() };
+            await setDoc(docRef, initialData);
+            return { id: userId, ...initialData };
         }
-        throw error;
-    }
+    } catch (error) { throw error; }
 };
 
-export const updateTask = async (taskId, updates) => {
+// Update Tasks in Student Planner
+export const updatePlannerTasks = async (userId, tasks) => {
     try {
-        const taskRef = doc(db, TASKS_COLLECTION, taskId);
-        await updateDoc(taskRef, updates);
-    } catch (error) {
-        throw error;
-    }
+        const docRef = doc(db, STUDENT_PLANNERS_COLLECTION, userId);
+        await updateDoc(docRef, {
+            tasks,
+            updatedAt: serverTimestamp()
+        });
+    } catch (error) { throw error; }
 };
 
-export const deleteTask = async (taskId) => {
+// Fetch Templates for a Semester
+export const getPlannerTemplatesBySemester = async (semester) => {
     try {
-        await deleteDoc(doc(db, TASKS_COLLECTION, taskId));
-    } catch (error) {
-        throw error;
-    }
+        const q = query(collection(db, PLANNER_TEMPLATES_COLLECTION), where('semester', '==', parseInt(semester)));
+        const snapshot = await getDocs(q);
+        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (error) { throw error; }
 };
+
+// Legacy Support (Optional: bridge to old screens if they use taskId)
+// If UI isn't updated yet, this might break.
+// But the task is to redesign the backend system.

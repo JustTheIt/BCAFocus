@@ -1,0 +1,109 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // --- Helper Functions ---
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function getUserData() {
+      // Use get() with a check to ensure the document exists
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    
+    function isAdmin() {
+      // Robust check for admin role
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             getUserData().role == 'admin';
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // --- Collection Rules ---
+
+    // Users: Users can read/write their own profile. Admins can read all.
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isAuthenticated(); 
+      allow update: if (isOwner(userId) && request.resource.data.role == resource.data.role) || isAdmin(); 
+      allow delete: if isAdmin();
+    }
+
+    // Academic Content (Public Read for Authenticated, Admin Write)
+    match /universities/{uniId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    match /subjects/{subjectId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    match /syllabus/{subjectId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    match /materials/{materialId} {
+      allow read: if isAuthenticated() && (resource.data.visible == true || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    // Templates (Public Read, Admin Write)
+    match /plannerTemplates/{templateId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    match /focusChallenges/{challengeId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    match /projectTemplates/{projectId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    match /careerPaths/{careerId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Student Data (Owner/Admin only)
+    match /studentPlanners/{userId} {
+      // Allow list for aggregation queries (counts) if admin
+      allow list: if isAdmin();
+      allow get: if isOwner(userId) || isAdmin();
+      allow write: if isOwner(userId) || isAdmin();
+    }
+    match /focusSessions/{userId} {
+      allow list: if isAdmin();
+      allow get: if isOwner(userId) || isAdmin();
+      allow write: if isOwner(userId) || isAdmin();
+    }
+    match /studentProjects/{userId} {
+      allow list: if isAdmin();
+      allow get: if isOwner(userId) || isAdmin();
+      allow write: if isOwner(userId) || isAdmin();
+    }
+
+    // Announcements
+    match /announcements/{announcementId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Legacy/Existing Collections
+    match /tasks/{taskId} {
+      allow read, write: if (isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid)) || isAdmin();
+    }
+    match /feedback/{feedbackId} {
+      allow create: if isAuthenticated();
+      allow read: if isAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
+      allow update: if isAdmin();
+    }
+  }
+}
+

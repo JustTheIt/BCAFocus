@@ -1,27 +1,34 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuth } from '../context/AuthContext';
+
 import AuthNavigator from './AuthNavigator';
 import TabNavigator from './TabNavigator';
-import { View, ActivityIndicator } from 'react-native';
-import colors from '../constants/colors';
+import AdminNavigator from './AdminNavigator'; // Import AdminNavigator
 
-const AppNavigator = () => {
+const Stack = createNativeStackNavigator();
+
+export default function AppNavigator() {
     const { user, loading } = useAuth();
 
     if (loading) {
-        return (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <ActivityIndicator size="large" color={colors.primary} />
-            </View>
-        );
+        return null; // Or a loading spinner
     }
 
     return (
         <NavigationContainer>
-            {user ? <TabNavigator /> : <AuthNavigator />}
+            <Stack.Navigator screenOptions={{ headerShown: false }}>
+                {user ? (
+                    user.role === 'admin' ? (
+                        <Stack.Screen name="Admin" component={AdminNavigator} />
+                    ) : (
+                        <Stack.Screen name="Main" component={TabNavigator} />
+                    )
+                ) : (
+                    <Stack.Screen name="Auth" component={AuthNavigator} />
+                )}
+            </Stack.Navigator>
         </NavigationContainer>
     );
 };
-
-export default AppNavigator;

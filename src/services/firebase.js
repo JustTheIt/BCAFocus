@@ -3,15 +3,14 @@ import { getAuth, initializeAuth, getReactNativePersistence } from "firebase/aut
 import { getFirestore } from "firebase/firestore";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// TODO: Replace with your actual Firebase config keys
-// You can also use process.env provided by expo-constants if you set it up in app.config.js
+// Firebase configuration from google-services.json
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyDH9LVqr6-oA-3sd3dxwgIuZ02vHOxYzxI",
+    authDomain: "mpproject-284e6.firebaseapp.com",
+    projectId: "mpproject-284e6",
+    storageBucket: "mpproject-284e6.firebasestorage.app",
+    messagingSenderId: "1094283428914",
+    appId: "1:1094283428914:android:44ada278eed082c778682b"
 };
 
 const app = initializeApp(firebaseConfig);

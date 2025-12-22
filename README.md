@@ -1,50 +1,82 @@
-# Welcome to your Expo app 👋
+# BCAFocus - Academic Planner for BCA Students 🎓
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+BCAFocus is a mobile application designed for Tribhuvan University (TU) BCA students to manage their academic life, study materials, and productivity.
 
-## Get started
+## 🚀 Technology Stack
 
-1. Install dependencies
+### Frontend (Mobile App)
+- **Language**: JavaScript (ES6+)
+- **Framework**: [React Native](https://reactnative.dev/) with [Expo](https://expo.dev/) (Managed Workflow)
+- **Navigation**: [React Navigation](https://reactnavigation.org/) (Stack & Bottom Tab)
+- **Icons**: [@expo/vector-icons](https://icons.expo.fyi/) (Ionicons)
+- **Styling**: Native StyleSheet (Vanilla JavaScript)
 
+### Backend & Infrastructure
+- **BaaS (Backend as a Service)**: [Firebase](https://firebase.google.com/)
+  - **Firestore**: NoSQL Document Database for real-time data.
+  - **Authentication**: Email/Password based login with Role-Based Access Control (RBAC).
+- **Media Hosting**: [Cloudinary](https://cloudinary.com/) (Used for high-speed delivery of PDFs, Notes, and Images).
+- **Environment Management**: `react-native-dotenv` for managing sensitive API keys.
+
+---
+
+## 📂 Project Structure
+
+```text
+BCAFocus/
+├── src/
+│   ├── screens/
+│   │   ├── admin/      # Management screens (Syllabus, Materials, Feedback)
+│   │   ├── student/    # Main student features (Home, Planner, Analytics)
+│   │   ├── auth/       # Login and Registration flows
+│   │   ├── projects/   # Project Guidance & Submission
+│   │   └── focus/       # Focus Mode timer logic
+│   ├── services/       # API Layer (Firebase/Cloudinary logic)
+│   │   ├── firebase.js # initialization
+│   │   ├── authService.js
+│   │   └── materialService.js
+│   ├── context/        # Global State (AuthContext)
+│   ├── navigation/     # Role-based Routing logic
+│   ├── constants/      # App Theme & Static Data (Syllabus database)
+│   └── utils/          # Helper functions (Upload pickers, Date formatters)
+├── assets/             # Images, Splash Screen, Icons
+├── .env                # Environment variables (Keys)
+└── App.js              # Entry Point
+```
+
+---
+
+## 🔐 Core Architecture: Role-Based Access
+
+The app is divided into two main domains based on the user's role stored in Firestore:
+
+1. **Admin Domain**:
+   - Create and manage University Syllabus and Subjects.
+   - Upload and verify Study Materials.
+   - Review Student Project submissions.
+   - Reply to User Feedback.
+   - Send system-wide Announcements.
+
+2. **Student Domain**:
+   - Personalized Academic Planner.
+   - Access to University-specific Syllabus.
+   - Search/View Materials (Notes, PDF).
+   - Submit Project ideas and view admin feedback.
+   - Focus Timer to track study sessions.
+
+---
+
+## 🛠️ How to Run Locally
+
+1. **Install Dependencies**
    ```bash
    npm install
    ```
 
-2. Start the app
+2. **Setup Environment**
+   Create a `.env` file in the root directory and add your Firebase and Cloudinary credentials.
 
+3. **Start the App**
    ```bash
    npx expo start
    ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.

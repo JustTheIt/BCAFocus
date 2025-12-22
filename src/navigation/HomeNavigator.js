@@ -3,7 +3,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import HomeScreen from '../screens/home/HomeScreen';
 import ProjectIdeasScreen from '../screens/projects/ProjectIdeasScreen';
 import CareerRoadmapScreen from '../screens/career/CareerRoadmapScreen';
-import MaterialsScreen from '../screens/materials/MaterialsScreen';
+import MaterialsScreen from '../screens/student/Materials';
 import colors from '../constants/colors';
 
 const Stack = createStackNavigator();

@@ -10,12 +10,10 @@ service cloud.firestore {
     }
     
     function getUserData() {
-      // Use get() with a check to ensure the document exists
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
     
     function isAdmin() {
-      // Robust check for admin role
       return isAuthenticated() && 
              exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
              getUserData().role == 'admin';
@@ -35,7 +33,61 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // Academic Content (Public Read for Authenticated, Admin Write)
+    // 1️⃣ Materials (Admin + Student Uploads)
+    match /materials/{materialId} {
+      // Students can only read approved materials. Admins can read all.
+      allow read: if isAuthenticated() && (resource.data.approved == true || isAdmin() || resource.data.uploaderId == request.auth.uid);
+      
+      // Admin can create anything. Students can create, but must set approved=false and uploadedBy='student'.
+      allow create: if isAdmin() || (
+        isAuthenticated() && 
+        request.resource.data.approved == false && 
+        request.resource.data.uploadedBy == 'student' &&
+        request.resource.data.uploaderId == request.auth.uid
+      );
+      
+      // Admin can update everything (approve/reject). Students can only update their own before approval.
+      allow update: if isAdmin() || (
+        isOwner(resource.data.uploaderId) && 
+        resource.data.approved == false &&
+        request.resource.data.approved == false
+      );
+      
+      allow delete: if isAdmin() || isOwner(resource.data.uploaderId);
+    }
+
+    // 2️⃣ Projects (Created by Admin)
+    match /projects/{projectId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // 3️⃣ Student Project Submissions
+    match /projectSubmissions/{submissionId} {
+      // Students can read their own submissions. Admin can read all.
+      allow read: if isAuthenticated() && (resource.data.studentId == request.auth.uid || isAdmin());
+      
+      // Student can create their own submission.
+      allow create: if isAuthenticated() && request.resource.data.studentId == request.auth.uid;
+      
+      // Admin can update status/feedback. Student can update their own submission if not already approved.
+      allow update: if isAdmin() || (
+        isAuthenticated() && 
+        resource.data.studentId == request.auth.uid && 
+        resource.data.status != 'approved' &&
+        request.resource.data.status == resource.data.status // Cannot change status themselves
+      );
+      
+      allow delete: if isAdmin() || (isAuthenticated() && resource.data.studentId == request.auth.uid);
+    }
+
+    // 4️⃣ Career Resources (Admin Only Write)
+    match /careerResources/{careerId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // --- Other Academic Content ---
     match /universities/{uniId} {
       allow read: if isAuthenticated();
       allow write: if isAdmin();
@@ -48,32 +100,15 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       allow write: if isAdmin();
     }
-    match /materials/{materialId} {
-      allow read: if isAuthenticated() && (resource.data.visible == true || isAdmin());
-      allow write: if isAdmin();
-    }
 
-    // Templates (Public Read, Admin Write)
-    match /plannerTemplates/{templateId} {
-      allow read: if isAuthenticated();
-      allow write: if isAdmin();
-    }
-    match /focusChallenges/{challengeId} {
-      allow read: if isAuthenticated();
-      allow write: if isAdmin();
-    }
-    match /projectTemplates/{projectId} {
-      allow read: if isAuthenticated();
-      allow write: if isAdmin();
-    }
-    match /careerPaths/{careerId} {
+    // Announcements
+    match /announcements/{announcementId} {
       allow read: if isAuthenticated();
       allow write: if isAdmin();
     }
 
     // Student Data (Owner/Admin only)
     match /studentPlanners/{userId} {
-      // Allow list for aggregation queries (counts) if admin
       allow list: if isAdmin();
       allow get: if isOwner(userId) || isAdmin();
       allow write: if isOwner(userId) || isAdmin();
@@ -89,13 +124,7 @@ service cloud.firestore {
       allow write: if isOwner(userId) || isAdmin();
     }
 
-    // Announcements
-    match /announcements/{announcementId} {
-      allow read: if isAuthenticated();
-      allow write: if isAdmin();
-    }
-
-    // Legacy/Existing Collections
+    // Legacy/Existing Collections (Keeping for compatibility)
     match /tasks/{taskId} {
       allow read, write: if (isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid)) || isAdmin();
     }

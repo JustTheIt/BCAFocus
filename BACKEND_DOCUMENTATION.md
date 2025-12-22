@@ -1,12 +1,10 @@
-# BCA Focus - Complete Backend Architecture
+## ☁️ Cloudinary Configuration
 
-## 🔥 Firebase Configuration
-
-**Project**: `mpproject-284e6`
-- **API Key**: `AIzaSyDH9LVqr6-oA-3sd3dxwgIuZ02vHOxYzxI`
-- **Auth Domain**: `mpproject-284e6.firebaseapp.com`
-- **Storage**: `mpproject-284e6.firebasestorage.app`
-- **Location**: `src/services/firebase.js`
+**Services**: `Material Storage`, `Project Submissions`, `Career Resources`
+- **Cloud Name**: (Configured in `src/services/cloudinaryService.js`)
+- **Upload Preset**: (Unsigned preset required)
+- **Files**: Handled via `expo-document-picker` and uploaded to specific folders.
+- **Location**: `src/services/cloudinaryService.js` and `src/utils/uploadUtils.js`
 
 ---
 
@@ -78,8 +76,9 @@
   materialId: string,
   subjectId: string,
   title: string,
-  fileUrl: string,          // Firebase Storage URL
-  type: "pdf" | "video" | "link",
+  cloudinaryUrl: string,      // Cloudinary URL
+  publicId: string,           // Cloudinary Public ID
+  fileType: "pdf" | "video" | "link" | string,
   uploadedAt: timestamp
 }
 ```

@@ -1,46 +1,98 @@
 import { db } from './firebase';
-import { collection, doc, getDoc, getDocs, setDoc, updateDoc, query, where, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, addDoc, updateDoc, setDoc, query, where, serverTimestamp, orderBy } from 'firebase/firestore';
 
-const PROJECT_TEMPLATES_COLLECTION = 'projectTemplates';
-const STUDENT_PROJECTS_COLLECTION = 'studentProjects';
+const PROJECTS_COLLECTION = 'projects';
+const PROJECT_SUBMISSIONS_COLLECTION = 'projectSubmissions';
 
-// Get Project Templates for a Semester
-export const getProjectTemplates = async (semester) => {
+/**
+ * Get Project Instructions/Details (Created by Admin)
+ */
+export const getProjectInstructions = async (semester) => {
     try {
-        const q = query(collection(db, PROJECT_TEMPLATES_COLLECTION), where('semester', '==', parseInt(semester)));
+        const q = semester === 'all'
+            ? collection(db, PROJECTS_COLLECTION)
+            : query(
+                collection(db, PROJECTS_COLLECTION),
+                where('semester', '==', parseInt(semester))
+            );
         const snapshot = await getDocs(q);
-        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const projects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        // Sort client-side to avoid index requirement
+        return projects.sort((a, b) => {
+            const timeA = a.createdAt?.seconds || 0;
+            const timeB = b.createdAt?.seconds || 0;
+            return timeB - timeA;
+        });
     } catch (error) { throw error; }
 };
 
-// Get Student Project Submissions
-export const getStudentProjects = async (userId) => {
+/**
+ * Submit Project (Student)
+ */
+export const submitProject = async (submissionData) => {
     try {
-        const docSnap = await getDoc(doc(db, STUDENT_PROJECTS_COLLECTION, userId));
-        return docSnap.exists() ? docSnap.data().submissions || [] : [];
+        const docRef = await addDoc(collection(db, PROJECT_SUBMISSIONS_COLLECTION), {
+            ...submissionData,
+            status: 'submitted',
+            submittedAt: serverTimestamp()
+        });
+        return { id: docRef.id, ...submissionData };
     } catch (error) { throw error; }
 };
 
-// Submit/Update Project
-export const submitProject = async (userId, projectId, status, url = '') => {
+/**
+ * Get Student's Submissions (Student)
+ */
+export const getStudentSubmissions = async (studentId) => {
     try {
-        const docRef = doc(db, STUDENT_PROJECTS_COLLECTION, userId);
-        const docSnap = await getDoc(docRef);
+        const q = query(
+            collection(db, PROJECT_SUBMISSIONS_COLLECTION),
+            where('studentId', '==', studentId)
+        );
+        const snapshot = await getDocs(q);
+        const submissions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-        let submissions = [];
-        if (docSnap.exists()) {
-            submissions = docSnap.data().submissions || [];
-        }
+        // Sort client-side to avoid index requirement
+        return submissions.sort((a, b) => {
+            const timeA = a.submittedAt?.seconds || 0;
+            const timeB = b.submittedAt?.seconds || 0;
+            return timeB - timeA;
+        });
+    } catch (error) { throw error; }
+};
 
-        const existingIndex = submissions.findIndex(s => s.projectId === projectId);
-        const submissionData = { projectId, status, url, updatedAt: new Date() };
+/**
+ * Get All Submissions for a Project (Admin)
+ */
+export const getProjectSubmissions = async (projectId) => {
+    try {
+        const q = query(
+            collection(db, PROJECT_SUBMISSIONS_COLLECTION),
+            where('projectId', '==', projectId)
+        );
+        const snapshot = await getDocs(q);
+        const submissions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-        if (existingIndex > -1) {
-            submissions[existingIndex] = submissionData;
-        } else {
-            submissions.push(submissionData);
-        }
+        // Sort client-side to avoid index requirement
+        return submissions.sort((a, b) => {
+            const timeA = a.submittedAt?.seconds || 0;
+            const timeB = b.submittedAt?.seconds || 0;
+            return timeB - timeA;
+        });
+    } catch (error) { throw error; }
+};
 
-        await setDoc(docRef, { submissions, updatedAt: serverTimestamp() }, { merge: true });
+/**
+ * Update Submission Status (Admin)
+ */
+export const updateSubmissionStatus = async (submissionId, status, feedback = '') => {
+    try {
+        const docRef = doc(db, PROJECT_SUBMISSIONS_COLLECTION, submissionId);
+        await updateDoc(docRef, {
+            status,
+            feedback,
+            reviewedAt: serverTimestamp()
+        });
     } catch (error) { throw error; }
 };

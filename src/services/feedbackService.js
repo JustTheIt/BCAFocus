@@ -35,12 +35,22 @@ export const getMyFeedback = async (userId) => {
     try {
         const q = query(
             collection(db, FEEDBACK_COLLECTION),
-            where('userId', '==', userId),
-            orderBy('createdAt', 'desc')
+            where('userId', '==', userId)
         );
-        const snapshot = await getDocs(q);
-        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const querySnapshot = await getDocs(q);
+        const feedback = querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+
+        // Sort client-side to avoid Firestore index requirement
+        return feedback.sort((a, b) => {
+            const timeA = a.createdAt?.seconds || 0;
+            const timeB = b.createdAt?.seconds || 0;
+            return timeB - timeA; // Descending
+        });
     } catch (error) {
+        console.error("Error fetching my feedback:", error);
         throw error;
     }
 };

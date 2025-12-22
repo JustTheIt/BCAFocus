@@ -60,15 +60,21 @@ export const getStudentAssignedTasks = async (studentId) => {
     try {
         const q = query(
             collection(db, COLLECTION_NAME),
-            where('studentId', '==', studentId),
-            orderBy('createdAt', 'desc')
+            where('studentId', '==', studentId)
         );
 
         const querySnapshot = await getDocs(q);
-        return querySnapshot.docs.map(doc => ({
+        const tasks = querySnapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
         }));
+
+        // Sort client-side to avoid Firestore index requirement
+        return tasks.sort((a, b) => {
+            const timeA = a.createdAt?.seconds || 0;
+            const timeB = b.createdAt?.seconds || 0;
+            return timeB - timeA; // Descending
+        });
     } catch (error) {
         console.error("Error fetching assigned tasks:", error);
         throw error;

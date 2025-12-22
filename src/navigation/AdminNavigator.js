@@ -8,6 +8,8 @@ import AnnouncementsScreen from '../screens/admin/Announcements';
 import { AnalyticsScreen, SettingsScreen } from '../screens/admin/AdminScreens';
 import MaterialsScreen from '../screens/admin/Materials';
 import FeedbackScreen from '../screens/admin/Feedback';
+import ProjectsScreen from '../screens/admin/Projects';
+import CareerScreen from '../screens/admin/Career';
 
 const Stack = createNativeStackNavigator();
 
@@ -25,6 +27,8 @@ export default function AdminNavigator() {
             <Stack.Screen name="Announcements" component={AnnouncementsScreen} />
             <Stack.Screen name="Analytics" component={AnalyticsScreen} />
             <Stack.Screen name="Materials" component={MaterialsScreen} />
+            <Stack.Screen name="Projects" component={ProjectsScreen} />
+            <Stack.Screen name="Career" component={CareerScreen} />
             <Stack.Screen name="Feedback" component={FeedbackScreen} />
             <Stack.Screen name="Settings" component={SettingsScreen} />
         </Stack.Navigator>

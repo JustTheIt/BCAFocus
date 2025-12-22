@@ -89,6 +89,30 @@ export default function AdminDashboard({ navigation }) {
                 />
 
                 <DashboardCard
+                    key="materials"
+                    title="Materials"
+                    icon="library-outline"
+                    color="#5AC8FA"
+                    onPress={() => navigation.navigate('Materials')}
+                />
+
+                <DashboardCard
+                    key="projects"
+                    title="Projects"
+                    icon="folder-open-outline"
+                    color="#FF2D55"
+                    onPress={() => navigation.navigate('Projects')}
+                />
+
+                <DashboardCard
+                    key="career"
+                    title="Career Paths"
+                    icon="briefcase-outline"
+                    color="#AF52DE"
+                    onPress={() => navigation.navigate('Career')}
+                />
+
+                <DashboardCard
                     key="announcements"
                     title="Announcements"
                     icon="megaphone-outline"

@@ -11,8 +11,8 @@ const ANNOUNCEMENTS_COLLECTION = 'announcements';
 const USERS_COLLECTION = 'users';
 const PLANNER_TEMPLATES_COLLECTION = 'plannerTemplates';
 const FOCUS_CHALLENGES_COLLECTION = 'focusChallenges';
-const PROJECT_TEMPLATES_COLLECTION = 'projectTemplates';
-const CAREER_PATHS_COLLECTION = 'careerPaths';
+const PROJECTS_COLLECTION = 'projects';
+const CAREER_RESOURCES_COLLECTION = 'careerResources';
 
 // Generic Helper for CRUD
 const addItem = async (col, data) => {
@@ -88,17 +88,17 @@ export const updateFocusChallenge = (id, updates) => updateItem(FOCUS_CHALLENGES
 export const deleteFocusChallenge = (id) => deleteItem(FOCUS_CHALLENGES_COLLECTION, id);
 export const getFocusChallenges = () => getItems(FOCUS_CHALLENGES_COLLECTION);
 
-// --- Project Templates ---
-export const addProjectTemplate = (data) => addItem(PROJECT_TEMPLATES_COLLECTION, data);
-export const updateProjectTemplate = (id, updates) => updateItem(PROJECT_TEMPLATES_COLLECTION, id, updates);
-export const deleteProjectTemplate = (id) => deleteItem(PROJECT_TEMPLATES_COLLECTION, id);
-export const getProjectTemplates = () => getItems(PROJECT_TEMPLATES_COLLECTION);
+// --- Project Templates (Renamed to Projects) ---
+export const addProject = (data) => addItem(PROJECTS_COLLECTION, data);
+export const updateProject = (id, updates) => updateItem(PROJECTS_COLLECTION, id, updates);
+export const deleteProject = (id) => deleteItem(PROJECTS_COLLECTION, id);
+export const getProjects = () => getItems(PROJECTS_COLLECTION);
 
-// --- Career Paths ---
-export const addCareerPath = (data) => addItem(CAREER_PATHS_COLLECTION, data);
-export const updateCareerPath = (id, updates) => updateItem(CAREER_PATHS_COLLECTION, id, updates);
-export const deleteCareerPath = (id) => deleteItem(CAREER_PATHS_COLLECTION, id);
-export const getCareerPaths = () => getItems(CAREER_PATHS_COLLECTION);
+// --- Career Resources ---
+export const addCareerResource = (data) => addItem(CAREER_RESOURCES_COLLECTION, data);
+export const updateCareerResource = (id, updates) => updateItem(CAREER_RESOURCES_COLLECTION, id, updates);
+export const deleteCareerResource = (id) => deleteItem(CAREER_RESOURCES_COLLECTION, id);
+export const getCareerResources = () => getItems(CAREER_RESOURCES_COLLECTION);
 
 // --- Announcements ---
 export const addAnnouncement = (data) => addItem(ANNOUNCEMENTS_COLLECTION, data);
